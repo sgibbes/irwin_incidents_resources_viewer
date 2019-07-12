@@ -1,5 +1,5 @@
 import create_class
-import test_query
+import query
 import sys
 
 
@@ -19,12 +19,12 @@ endpoint_type = raw_input("ENDPOINT TYPE: ")
 inputs = create_class.QueryType(endpoint_type)
 
 # generate token to query endpoint
-token = test_query.get_token(inputs.token_url, inputs.usr, inputs.pswd)
+token = query.get_token(inputs.token_url, inputs.usr, inputs.pswd)
 
 # construct where clause. If user doesn't input anything, defaults to CreatedOnDateTime > 0
-where_inputs = test_query.where_inputs(inputs)
+where_inputs = query.where_inputs(inputs)
 print where_inputs
-sys.exit()
+
 '''
 irwin data/ api id
 312c4f1f-e148-4531-b7dd-49fc5e2136d8
@@ -33,8 +33,8 @@ irwin data/ api id
 '''
 # query the desired endpoint
 
-response = test_query.query_api(inputs, token, where_inputs)
+response = query.query_api(inputs, token, where_inputs)
 
 # return data
-test_query.load_response(response)
+print query.load_response(response)
 
