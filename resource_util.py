@@ -3,6 +3,23 @@ import query
 import sys
 
 
+def get_names():
+    inputs_dict = {}
+    var_list = ['NameFirst', 'NameLast']
+    where = "CreatedOnDateTime > 0"
+
+    for var in var_list:
+        inputs_dict[var] = raw_input("{}: ".format(var))
+
+    for name, val in inputs_dict.iteritems():
+        if val is not '':
+            # lowercase the irwin id
+            # add the where clause to build where statement
+            where += " AND {} = '{}'".format(name, val)
+
+    return where
+
+
 def query_related_tables(inputs, token, sql, id=None):
 
     # query capability table
