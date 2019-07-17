@@ -17,6 +17,24 @@ class ResourceAttributes:
         self.homedispatchunit = None
         self.resourcesor = None
         self.home_unit = None
+        self.jet_port = 'ONT'
+        self.resource_clearinghouse_id = None
+        self.resource_kind = None
+        self.manager_contact_info = None
+        self.primary_email = "#"
+
+
+def capability_type(irwin_ctid, irwin_rid):
+    json_feature = {
+        "attributes": {
+        "Capacity": 'Qualified',
+
+        'IrwinCTID': irwin_ctid,
+        'IrwinRID': irwin_rid
+
+        }}
+
+    return json_feature
 
 
 def feature(a):
@@ -32,9 +50,9 @@ def feature(a):
                 "GeneralStatus": "Available",
                 "IsActive": 1,
                 "IsLocationTrackingEnabled": 0,
-                "JetPort": "ONT",
-                "ResourceKind": "Overhead",
-                "ProviderUnit": a.homedispatchunit,
+                "JetPort": a.jet_port,
+                "ResourceKind": a.resource_kind,
+                "ProviderUnit": a.home_unit,
                 "HomeUnit": a.home_unit,
                 "NameFirst": a.firstname,
                 "NameMiddle": a.middlename,
@@ -42,7 +60,8 @@ def feature(a):
                 "PrimaryEmail": "moonwalker1@nasa.gov",
                 "PrimaryPhone": phone,
                 "ResourceSOR": a.resourcesor,
-                "ManagerContactInfo": "John Doe WAWAS Training Manager, 360-777-2316"
+                "ManagerContactInfo": a.manager_contact_info,
+                "ResourceClearinghouseID": a.resource_clearinghouse_id
             },
             "geometry": {
                 "x": -117.985835,
@@ -69,10 +88,11 @@ def construct_monthday():
     return "{}{}".format(month, day)
 
 
-def construct_add(home_dispatch_unit, resourcesor):
+def construct_oh(home_dispatch_unit, resourcesor):
 
     attributes = ResourceAttributes()
 
+    attributes.resource_kind = "Overhead"
     attributes.firstname = names.get_first_name()
     attributes.lastname = names.get_last_name()
     attributes.middlename = names.get_first_name()
@@ -82,14 +102,15 @@ def construct_add(home_dispatch_unit, resourcesor):
     attributes.resourcesor = resourcesor
 
     attributes.home_unit = unit_ids(home_dispatch_unit)
+    attributes.resource_clearinghouse_id = "#"
     return attributes
 
 
 def create_many_resources(num, home_dispatch_unit, resourcesor):
     json_feature_list = []
     for i in range(0, num):
-        attributes = construct_add(home_dispatch_unit, resourcesor)
-
+        attributes = construct_oh(home_dispatch_unit, resourcesor)
+        attributes.manager_contact_info = "John Doe WAWAS Training Manager, 360-777-2316"
         json_feature = feature(attributes)
 
         json_feature_list.append(json_feature)
@@ -114,7 +135,21 @@ def query_api(url, token, json_features):
     return json.loads(statsfjstr)
 
 
-def unit_ids(dispatch_center):
-    d = {'AKYTDC': 'AKUYD', 'AKFASC': None, 'TXTIC': 'TXTXF', 'CAANCC': 'CAANF', 'CASBCC': 'CABDF', 'CALACC': None}
+def dispatch_centers(resource_sor):
 
-    return d[dispatch_center]
+    # resource sor and home dispatch units
+    dispatch_centers_ids = {'iqcs': ['AKYTDC', 'TXTIC', 'CAANCC', 'CASBCC'], 'iqs': ['AKYTDC', 'AKFASC',
+                                                                                 'TXTIC', 'CABDCC', 'CALACC']}
+
+    return dispatch_centers_ids[resource_sor]
+
+
+def unit_ids(dispatch_center):
+    # home dispatch unit and home unit
+    d = {'AKYTDC': 'AKUYD', 'AKFASC': 'AKFAS', 'TXTIC': 'TXTXF', 'CAANCC': 'CAANF',
+         'CASBCC': 'CABDF', 'CALACC': 'CALAC', 'CABDU': 'CABDUC'}
+
+    try:
+        return d[dispatch_center]
+    except KeyError as e:
+        return None

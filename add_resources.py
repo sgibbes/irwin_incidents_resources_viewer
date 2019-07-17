@@ -38,9 +38,9 @@ url = 'https://irwint.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0
 
 def add_oh_resources(resource_sor):
 
-    dispatch_center = ['AKYTDC', 'AKFASC', 'TXTIC', 'CANCC', 'CASBCC', 'CALAC']
+    dispatch_centers = add_resource_util.dispatch_centers(resource_sor)
 
-    for d in dispatch_center:
+    for d in dispatch_centers:
 
         # generate n number of resources
         print 'home dispatch unit: {}'.format(d)
@@ -53,10 +53,10 @@ def add_oh_resources(resource_sor):
         if not response['addResults'][0]['success']:
             print 'ERROR: \m'
             print response['addResults'][0]['error']
-
+            sys.exit()
         else:
             print 'SUCCESS!'
 
 
 add_oh_resources('iqcs')
-add_oh_resources('iqs')
+# add_oh_resources('iqs')
