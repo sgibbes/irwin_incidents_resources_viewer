@@ -1,4 +1,3 @@
-
 import query
 import sys
 
@@ -30,7 +29,7 @@ def query_related_tables(inputs, token, sql, id=None):
     a_list = []
     features = response['features']
     len_features = len(features)
-    print "Number of Records Found: {}".format(len_features)
+    print "\tnumber of Records Found: {}".format(len_features)
     if len_features > 0:
 
         irwin_id = None
@@ -43,7 +42,8 @@ def query_related_tables(inputs, token, sql, id=None):
         return a_list, irwin_id
 
     else:
-        return None
+        return None, None
+
 
 def multiple_records(response, inputs, token):
     for r in response:
@@ -58,7 +58,6 @@ def multiple_records(response, inputs, token):
         response = query.query_api(inputs, token, sql)
         if len(response['features']) > 1:
 
-
             print response
             sys.exit()
 
@@ -70,3 +69,11 @@ def urls(table):
 
     return url_dict[table]
 
+
+def format_response(resource_response, capability_d=None, captype_d=None, experience_d=None):
+    for tablename, response in {'RESOURCE': resource_response, 'CAPABILITY': capability_d, 'CAPABILITY TYPE': captype_d,
+                     'EXPERIENCE': experience_d}.iteritems():
+        if response:
+            print '\nTable: {}'.format(tablename)
+            for record in response:
+                print record
