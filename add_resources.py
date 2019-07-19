@@ -29,11 +29,11 @@ IROC - 2 crew resources in dispatch center
 AKYTDC, AFFASC, TXTIC, CANCC, CASBCC, CALAC, CABDCC
 '''
 # Log in as qualification_test
-token_url = 'https://irwint.doi.gov/arcgis/tokens/generateToken?'
+token_url = 'https://irwinoat.doi.gov/arcgis/tokens/generateToken?'
 token = query.get_token(token_url, 'qualification_test', 'Testing!Testing!123')
 
 # url to add fetures to irwin test
-url = 'https://irwint.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/addFeatures'
+url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/addFeatures'
 
 
 def add_oh_resources(resource_sor):
@@ -44,9 +44,10 @@ def add_oh_resources(resource_sor):
 
         # generate n number of resources
         print 'home dispatch unit: {}'.format(d)
-        json_features = add_resource_util.create_many_resources(1, d, resource_sor)
+        json_features = add_resource_util.create_many_resources(41, d, resource_sor)
 
         # send resources to addFeatures endpoint
+
         response = add_resource_util.query_api(url, token, json_features)
 
         # check if they were successfully added
@@ -59,4 +60,4 @@ def add_oh_resources(resource_sor):
 
 
 add_oh_resources('iqcs')
-# add_oh_resources('iqs')
+add_oh_resources('iqs')

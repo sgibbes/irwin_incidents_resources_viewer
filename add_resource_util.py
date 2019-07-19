@@ -64,8 +64,8 @@ def feature(a):
                 "ResourceClearinghouseID": a.resource_clearinghouse_id
             },
             "geometry": {
-                "x": -117.985835,
-                "y": 34.259355
+                "x": dispatch_center_coords(a.homedispatchunit)['x'],
+                "y": dispatch_center_coords(a.homedispatchunit)['y']
             }
         }
 
@@ -109,10 +109,19 @@ def construct_oh(home_dispatch_unit, resourcesor):
 def create_many_resources(num, home_dispatch_unit, resourcesor):
     json_feature_list = []
     for i in range(0, num):
-        attributes = construct_oh(home_dispatch_unit, resourcesor)
-        attributes.manager_contact_info = "John Doe WAWAS Training Manager, 360-777-2316"
-        json_feature = feature(attributes)
 
+        # initiate class
+        attributes = construct_oh(home_dispatch_unit, resourcesor)
+
+        # customize some attributes
+        attributes.manager_contact_info = "John Doe WAWAS Training Manager, 360-777-2316"
+
+        # send the attributes class to the json template and fill it in
+
+        json_feature = feature(attributes)
+        print '\n\n'
+        for k, v in json_feature.iteritems():
+            print '{}: {}'.format(k, v)
         json_feature_list.append(json_feature)
 
     return json_feature_list
@@ -138,18 +147,36 @@ def query_api(url, token, json_features):
 def dispatch_centers(resource_sor):
 
     # resource sor and home dispatch units
-    dispatch_centers_ids = {'iqcs': ['AKYTDC', 'TXTIC', 'CAANCC', 'CASBCC'], 'iqs': ['AKYTDC', 'AKFASC',
-                                                                                 'TXTIC', 'CABDCC', 'CALACC']}
+    dispatch_centers_ids = {'iqcs': ['AKYTDC', 'TXTIC', 'CAANCC', 'CASBCC'],
+                            'iqs': ['AKYTDC', 'AKFASC', 'TXTIC', 'CABDCC', 'CALACC']}
 
     return dispatch_centers_ids[resource_sor]
 
 
 def unit_ids(dispatch_center):
     # home dispatch unit and home unit
-    d = {'AKYTDC': 'AKUYD', 'AKFASC': 'AKFAS', 'TXTIC': 'TXTXF', 'CAANCC': 'CAANF',
-         'CASBCC': 'CABDF', 'CALACC': 'CALAC', 'CABDU': 'CABDUC'}
+    d = {'AKYTDC': 'AKUYD',
+         'AKFASC': 'AKFAS',
+         'TXTIC': 'TXTXF',
+         'CAANCC': 'CAANF',
+         'CASBCC': 'CABDF',
+         'CALACC': 'CALAC',
+         'CABDCC': 'CABDU'}
 
     try:
         return d[dispatch_center]
     except KeyError as e:
         return None
+
+
+def dispatch_center_coords(dispatch_center):
+    d = {'AKYTDC': {'x': -147.6254, 'y': 64.8022},
+         'AKUYD': {'x': -144.2206, 'y': 67.8946},
+         'AKFASC': {'x': -148.3543, 'y': 64.8774},
+         'TXTIC': {'x': -94.6657, 'y': 31.3382},
+         'CAANCC': {'x': -118.2527, 'y': 34.7191},
+          'CASBCC': {'x': -117.2089, 'y': 34.1286},
+          'CALACC': {'x': -118.7548, 'y': 34.1130},
+         'CABDCC': {'x': -117.2900, 'y': 34.1100}}
+
+    return d[dispatch_center]
