@@ -9,9 +9,10 @@ import sys
 # into capability type table
 
 
-def get_existing_oh_resource(token, sql):
-    url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/Query'
-
+def get_existing_oh_resource(token, sql, url):
+    print token
+    print sql
+    print url
     endpoint_type = 'resource'
 
     # initiate class
@@ -24,6 +25,7 @@ def get_existing_oh_resource(token, sql):
 
     else:
         return False
+
 
 def get_capability_type_id(token, sql):
     url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/3/Query'
@@ -60,24 +62,47 @@ def add_record(json_feature, url, token):
     return response
 
 
-def create_new_spreadsheet():
-    df = pd.read_csv('/Users/sam/Documents/IRWIN/CAD_ROW_DBUNT_edited copy.csv')
+def create_new_spreadsheet_from_orig(in_sheet=None):
 
+    if in_sheet:
+        df = pd.read_csv(in_sheet)
+    else:
+        df = pd.read_csv('/Users/sam/Documents/IRWIN/CAD_ROW_DBUNT_edited.csv')
+    # get first, last name
+    df['NameLast'], df['NameFirst'] = df['ROSNAME'].str.split(',', 1).str
+
+    return df
+
+
+def create_new_spreadsheet(in_sheet=None):
+
+    if in_sheet:
+        df = pd.read_csv(in_sheet)
+    else:
+        df = pd.read_csv('/Users/sam/Documents/IRWIN/CAD_ROW_DBUNT_edited.csv')
+        # df = pd.read_csv('/Users/sam/Documents/IRWIN/CAD_ROW_DBUNT_edited_test.csv')
     # just select overhead resource
     df = df[df.ResourceKind == "O"]
 
     # get first, last name
     df['NameLast'], df['NameFirst'] = df['name'].str.split(',', 1).str
-
-    # make up middle
-    df['NameMiddle'] = 'A'
-
+    df['NameMiddle'] = ''
     return df
 
 
 def add_iroc_oh_resources():
-    # set up url, token, etc
-    token_url = 'https://irwinoat.doi.gov/arcgis/tokens/generateToken?'
+    query_resource_url = 'https://irwint.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/Query'
+    # query_resource_url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/Query'
+
+    capability_type_url = 'https://irwint.doi.gov/arcgis/rest/services/Resource/FeatureServer/1/addFeatures'
+    # capability_type_url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/1/addFeatures'
+
+    token_url = 'https://irwint.doi.gov/arcgis/tokens/generateToken?'
+    # token_url = 'https://irwinoat.doi.gov/arcgis/tokens/generateToken?'
+
+    add_overhead_url = 'https://irwint.doi.gov/arcgis/rest/services/Resource/FeatureServer/0/addFeatures'
+    # add_overhead_url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/addFeatures'
+
     token = query.get_token(token_url, 'qualification_test', 'Testing!Testing!123')
 
     df = create_new_spreadsheet()
@@ -111,27 +136,30 @@ def add_iroc_oh_resources():
         # query to make sure firename, lastname doesn't already exist, if so, pass
         sql = "NameFirst = '{}' AND NameLast = '{}'".format(attributes.firstname, attributes.lastname)
         print sql
-
-        if get_existing_oh_resource(token, sql):
-            print 'resources already exists, skip'
+        if get_existing_oh_resource(token, sql, query_resource_url):
+            print "already exists, pass\n"
+            with open('errors.txt', 'a') as errorfile:
+                errorfile.write('Already exists: {}\n'.format(sql))
             pass
 
         else:
-            print 'keep going'
+            print '\n\nADDING OVERHEAD RESOURCE: {} {}'.format(attributes.firstname, attributes.lastname)
 
-            print '\n\nADDING OVERHEAD RESOURCE: {} {}\n\n'.format(attributes.firstname, attributes.lastname)
-
-            # url to add fetures to irwin test
-            url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/addFeatures'
-            response = add_record(or_json_feature, url, token)
+            response = add_record(or_json_feature, add_overhead_url, token)
 
             if not response['addResults'][0]['success']:
                 print 'not a success'
+                with open('errors.txt', 'a') as errorfile:
+                    errorfile.write('not a success: {}\n'.format(sql))
+
                 pass
 
             else:
                 # get the irwin RID back
                 irwinrid = str(response['addResults'][0]['irwinRID'])
+
+                # add irwin rid to spreadsheet:
+                df.at[index, 'IrwinRID'] = str(irwinrid)
 
                 # create a related record in the capability table
                 position_code = row['Position']
@@ -140,17 +168,13 @@ def add_iroc_oh_resources():
                 # query the capability type table to get capability type id
                 irwin_ctid = get_capability_type_id(token, sql)
 
-                print '\nIrwinCTID: {}'.format(irwin_ctid)
-                print '\nIrwinRID: {}'.format(irwinrid)
-                print '\nPosition code: {}'.format(position_code)
-
                 # add record in the capability table
                 capability_type_json_feature = add_resource_util.capability_type(irwin_ctid, irwinrid)
 
-                url = 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/1/addFeatures'
-
                 print 'ADDING RELATED RECORD IN CAPABILITY TABLE'
-                response = add_record(capability_type_json_feature, url, token)
+                add_record(capability_type_json_feature, capability_type_url, token)
+
+    df.to_csv('/Users/sam/Documents/IRWIN/CAD_ROW_DBUNT_edited_w_irwinrid_v2.csv')
 
 
 def find_missing_position_codes():

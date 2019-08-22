@@ -1,0 +1,24 @@
+
+add these using the proper login
+[
+  {
+    "attributes": {
+      "ApparatusNumber": "",
+      "GeneralStatus": "Available",
+      "HomeDispatchUnit": "",
+      "HomeUnit": "",
+      "IsLocationTrackingEnabled": 1,
+      "IsNationalResource": 0,
+      "ResourceKind": "Equipment",
+      "ManagerContactInfo": "person@mail.com",
+      "ProviderUnit": "",
+      "SerialNumber": "",
+      "VIN": "",
+    },
+    "geometry": {
+      "x": -97.947200,
+      "y": 32.185950
+    }
+
+  }
+]

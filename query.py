@@ -51,10 +51,11 @@ def get_token(url, usr, pswd):
     return response['token']
 
 
-def where_inputs(i):
+def where_inputs(i, in_var_list=None):
 
     # set up at least one where clause that can be added onto
-    where = "CreatedOnDateTime > 0"
+    # where = "CreatedOnDateTime > 0"
+    where = "GlobalID is not null"
 
     # these are all possible where clauses to build
     if i.url_type == 'resource':
@@ -62,6 +63,8 @@ def where_inputs(i):
     else:
         var_list = [i.id, 'PooState']
 
+    if in_var_list:
+        var_list.extend(in_var_list)
     # for each of the variables, ask for input. press enter to skip that one
     inputs_dict = {}
     for var in var_list:

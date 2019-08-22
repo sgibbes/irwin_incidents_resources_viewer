@@ -4,7 +4,7 @@ import sys
 
 def get_names():
     inputs_dict = {}
-    var_list = ['NameFirst', 'NameLast']
+    var_list = ['NameFirst', 'NameLast', 'IrwinRID']
     where = "CreatedOnDateTime > 0"
 
     for var in var_list:
@@ -24,12 +24,10 @@ def query_related_tables(inputs, token, sql, id=None):
     # query capability table
 
     response = query.query_api(inputs, token, sql)
-    # capability_response = test_query.load_response(response)
-
     a_list = []
     features = response['features']
     len_features = len(features)
-    print "\tnumber of Records Found: {}".format(len_features)
+    # print "\tnumber of Records Found: {}".format(len_features)
     if len_features > 0:
 
         irwin_id = None
@@ -45,35 +43,54 @@ def query_related_tables(inputs, token, sql, id=None):
         return None, None
 
 
-def multiple_records(response, inputs, token):
+def multiple_records(response, inputs, token, environment):
     for r in response:
         print '\n'
         irwinrid = r['attributes']['IrwinRID']
         print r['attributes']['NameLast']
         print r['attributes']['NameFirst']
 
-        inputs.url = urls('capability')
+        inputs.url = urls('capability', environment)
         sql = "IrwinRID = '{}'".format(irwinrid)
-
         response = query.query_api(inputs, token, sql)
         if len(response['features']) > 1:
 
-            print response
+            for k, v in response.iteritems():
+                print '{}: {}'.format(k, v)
             sys.exit()
 
 
-def urls(table):
-    url_dict = {'capability': 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/1/query',
-    'capability_type': 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/3/query',
-    'experience': 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/5/query'}
+def urls(table, endpoint_type):
 
-    return url_dict[table]
+    url_dict = {'capability': 'https://{}.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/1/query',
+    'capability_type': 'https://{}.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/3/query',
+    'experience': 'https://{}.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/5/query',
+    'capability_request': 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/2/query',
+    'resource': 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/0/query',
+    'resource_relationship': 'https://irwinoat.doi.gov/arcgis/rest/services/next/Resource/FeatureServer/6/query'}
+
+    return url_dict[table].format(endpoint_type)
 
 
-def format_response(resource_response, capability_d=None, captype_d=None, experience_d=None):
+def format_response(resource_response, capability_d=None, captype_d=None, experience_d=None, capability_r_d=None):
     for tablename, response in {'RESOURCE': resource_response, 'CAPABILITY': capability_d, 'CAPABILITY TYPE': captype_d,
-                     'EXPERIENCE': experience_d}.iteritems():
+                     'EXPERIENCE': experience_d, 'CAPABILITY REQUEST': capability_r_d}.iteritems():
         if response:
-            print '\nTable: {}'.format(tablename)
-            for record in response:
-                print record
+            print 'TABLE: {}'.format(tablename)
+
+            for r in response:
+                if r:
+                    if type(r) == list:
+                        for record in r:
+                            print '\n'
+                            for k, v in record['attributes'].iteritems():
+                                print '{}: {}'.format(k, v)
+                    else:
+                        for k, v in r['attributes'].iteritems():
+                            print '{}: {}'.format(k, v)
+
+                    print '\n'
+
+            # for record in response:
+            #     for k, v in record['attributes'].iteritems():
+            #         print '{}: {}'.format(k, v)

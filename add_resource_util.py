@@ -37,6 +37,33 @@ def capability_type(irwin_ctid, irwin_rid):
     return json_feature
 
 
+def equipment_add(a):
+
+    json_features = {
+            "attributes": {
+              "ApparatusNumber": a.app_num,
+              "GeneralStatus": "Available",
+              "HomeDispatchUnit": a.homedispatchunit,
+              "HomeUnit": a.home_unit,
+              "IsLocationTrackingEnabled": 1,
+              "IsNationalResource": 0,
+              "ResourceKind": "Equipment",
+              "ManagerContactInfo": "person@mail.com",
+              "ProviderUnit": a.provider_unit,
+              "SerialNumber": a.serial_num,
+              "ResourceSOR": a.resourcesor,
+              "VIN": a.vin,
+            },
+            "geometry": {
+              "x": -97.947200,
+              "y": 32.185950
+            }
+        }
+
+    return json_features
+
+
+
 def feature(a):
 
     phone = "{}-{}-{}".format(randint(100, 999), randint(100, 999), randint(1000, 9999))
@@ -64,8 +91,8 @@ def feature(a):
                 "ResourceClearinghouseID": a.resource_clearinghouse_id
             },
             "geometry": {
-                "x": dispatch_center_coords(a.homedispatchunit)['x'],
-                "y": dispatch_center_coords(a.homedispatchunit)['y']
+                "x": -117.98583499999995,
+                "y": 34.25935500000003
             }
         }
 
@@ -154,6 +181,7 @@ def dispatch_centers(resource_sor):
 
 
 def unit_ids(dispatch_center):
+
     # home dispatch unit and home unit
     d = {'AKYTDC': 'AKUYD',
          'AKFASC': 'AKFAS',
@@ -175,8 +203,8 @@ def dispatch_center_coords(dispatch_center):
          'AKFASC': {'x': -148.3543, 'y': 64.8774},
          'TXTIC': {'x': -94.6657, 'y': 31.3382},
          'CAANCC': {'x': -118.2527, 'y': 34.7191},
-          'CASBCC': {'x': -117.2089, 'y': 34.1286},
-          'CALACC': {'x': -118.7548, 'y': 34.1130},
+         'CASBCC': {'x': -117.2089, 'y': 34.1286},
+         'CALACC': {'x': -118.7548, 'y': 34.1130},
          'CABDCC': {'x': -117.2900, 'y': 34.1100}}
 
     return d[dispatch_center]
