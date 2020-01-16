@@ -1,10 +1,9 @@
 import requests
-import string
 import json
 import urllib
 import urllib2
-import sys
 import pandas as pd
+import csv
 
 
 def min_max_objid(stats_json):
@@ -45,17 +44,48 @@ def query_api(url, token, where):
     return json.loads(statsfjstr)
 
 
-def get_capability(list_of_features, token, capability_coll):
-    url = 'https://services1.arcgis.com/Hp6G80Pky0om7QvQ/arcgis/rest/services' \
-                   '/[OAT_NEXT]_Resources_VIEW_(Read_Only)/FeatureServer/2/query'
-    for record in list_of_features:
-        irwin_rid = record['attributes']['IrwinRID']
+def response_to_dict(feature_coll, csv_file):
+    # put attributes into dictionary
+    attributes = []
+    for f in feature_coll['features']:
 
-        where = "IrwinRID = '{}'".format(irwin_rid.upper())
+        try:
+            # add geometry to the attributes as a new key
+            f['attributes']['geometry'] = f['geometry']
 
-        list_of_capabilities = query_api(url, token, where)
+        except:
+            pass
 
-        capability_coll['features'].extend(list_of_capabilities['features'])
+        attributes.append(f['attributes'])
 
-    return capability_coll
+    df = pd.DataFrame(attributes)
+    df.to_csv(csv_file)
+
+
+def response_to_dict_nopd(feature_coll, csv_file):
+    # put attributes into dictionary
+    attributes = []
+    for f in feature_coll['features']:
+
+        try:
+            # add geometry to the attributes as a new key
+            f['attributes']['geometry'] = f['geometry']
+
+        except:
+            pass
+
+        attributes.append(f['attributes'])
+
+    csv_columns = attributes[0].keys()
+
+    try:
+        with open(csv_file, 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
+            writer.writeheader()
+            for data in attributes:
+                writer.writerow(data)
+    except IOError:
+        print("I/O error")
+
+
 

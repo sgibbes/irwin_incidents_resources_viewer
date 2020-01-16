@@ -1,25 +1,12 @@
-import pandas as pd
-
 from util import *
+import sys
 
 
 def page_api(token):
-    '''
-    Here are a few where clauses to try. Always leave the OBJECTID > {} in
 
-    To gather all records for any of the tables:
-    where = "OBJECTID > {}"
-
-    Some tables have thousands of records so to test, try a specific query. This one is for Resources (table 0)
-    where = "OBJECTID > {} AND ResourceKind = 'Overhead' AND OperationalStatus = 'At Incident'"
-
-    # to query the capability table (table # 2), first test using a specific where clause:
-    where = "OBJECTID > {} AND IrwinRID = '903E8D5D-7337-43BC-92CF-B1CDA5AB2468'"
-
-    '''
     # this will iterate over records, using the objectid to identify where previous batch stopped
-    counter = 0
-
+    counter = 1
+    print 'iteration number: {}'.format(counter)
     # some tables have thousands of records so to test, try a specific query:
     where = "OBJECTID > {} AND ResourceKind = 'Overhead' AND OperationalStatus = 'At Incident'"
 
@@ -47,6 +34,7 @@ def page_api(token):
 
     # get the number of records returned, so that when it is 0, can exit loop
     len_of_response = len(first_batch['features'])
+    print 'number of features: {}'.format(len_of_response)
 
     # while our response is true
     while response:
@@ -61,12 +49,11 @@ def page_api(token):
         # query api using where clause, set Objectid > max objectid of last batch
         next_batch = query_api(endpoint_url, token, where.format(max_obj))
 
-        print 'min/max of batch above: {}, {}'.format(min_obj, max_obj)
+        print 'number of features: {}'.format(len(next_batch['features']))
 
         # catch any errors returned by API
         if 'error' in next_batch.keys():
             print next_batch['error']
-        print len(next_batch['features'])
 
         # the # of records returned should always be equal to max records allowed by API
         # unless on last iteration. otherwise, something is wrong
@@ -90,18 +77,6 @@ def page_api(token):
 
             min_obj, max_obj = min_max_objid(next_batch)
 
-    # put attributes into dictionary
-    attributes = []
-    for f in feature_coll['features']:
-
-        try:
-            # add geometry to the attributes as a new key
-            f['attributes']['geometry'] = f['geometry']
-
-        except:
-            pass
-
-        attributes.append(f['attributes'])
-
-    df = pd.DataFrame(attributes)
-    df.to_csv('irwin_oatnext.csv')
+    # write the feature collection to a csv file
+    csv_file = 'irwin_oat_next.csv'
+    response_to_dict(feature_coll, csv_file)
