@@ -6,12 +6,6 @@ import pandas as pd
 import csv
 
 
-def min_max_objid(stats_json):
-    seq = [x['attributes']['OBJECTID'] for x in stats_json['features']]
-
-    return min(seq), max(seq)
-
-
 def get_token(usr, pswd):
     # get a token in order to query the endpoint
     token_url = 'https://www.arcgis.com/sharing/generatetoken?expiration=120&' \
