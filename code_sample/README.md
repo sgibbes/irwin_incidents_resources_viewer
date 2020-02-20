@@ -1,4 +1,4 @@
-Sample code for downloading resources data from IRWIN OAT/NEXT 
+Sample code for downloading data from IRWIN 
 
 Replace text with your username/password here:
 `code_sample/main.py:8`
@@ -7,7 +7,7 @@ Run the code: `python main.py`
 
 The code will get the token, then query the specific table (read below to change that table).
 
-The script is initially set up to query a specific set of resources. If this runs without error, 
+The script is initially set up to query a specific set of data. If this runs without error, 
 remove the additional query params so that it reads `1=1` (`code_sample/main.py:19`)
 
 The nature of this script is to download ALL records in a particular table. 
@@ -25,7 +25,6 @@ The dictionary is converted to a pandas dataframe (or can be run without pandas,
 
 - To change the table that is queried, edit the endpoint url: `code_sample/main.py:15`. Replace the "0" following FeatureServer with a table number.
 Reference the REST endpoint for table indexes.
-(https://services1.arcgis.com/Hp6G80Pky0om7QvQ/ArcGIS/rest/services/[OAT_NEXT]_Resources_VIEW_(Read_Only)/FeatureServer)
 
 - To change the where clause, edit the where variable: `code_sample/main.py:19`
 

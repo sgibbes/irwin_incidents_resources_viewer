@@ -19,6 +19,8 @@ def page_api(token, endpoint_url, where):
         # query api using result offset
         next_batch = query_api(endpoint_url.format(result_offset), token, where)
 
+        print len(next_batch['features'])
+
         # catch any errors returned by API
         if 'error' in next_batch.keys():
             print next_batch['error']

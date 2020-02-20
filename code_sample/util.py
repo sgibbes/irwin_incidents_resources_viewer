@@ -10,6 +10,21 @@ def get_token(usr, pswd):
     # get a token in order to query the endpoint
     token_url = 'https://www.arcgis.com/sharing/generatetoken?expiration=120&' \
                 'referer=localhost&f=json&username={}&password={}'.format(usr, pswd)
+
+    r = requests.post(token_url,
+                      data={"username": usr,
+                            "password": pswd,
+                            'f': 'json'})
+
+    response = r.json()
+
+    return response['token']
+
+
+def get_token_endpoint(usr, pswd):
+    'https://irwinoat.doi.gov/arcgis/tokens/generateToken?'
+    # get a token in order to query the endpoint
+    token_url = 'https://irwinoat.doi.gov/arcgis/tokens/generateToken?'
     r = requests.post(token_url,
                       data={"username": usr,
                             "password": pswd,
@@ -35,7 +50,17 @@ def query_api(url, token, where):
     statres = urllib2.urlopen(url=req, data=statsdata)
     statsfjstr = statres.read()
 
-    return json.loads(statsfjstr)
+    newstats = unicode(statsfjstr, errors='ignore')
+    return json.loads(newstats)
+
+
+def decode_ascii(stats):
+    for line in stats:
+        # print line
+        try:
+            line.decode('ascii')
+        except:
+            print line
 
 
 def response_to_dict(feature_coll, csv_file):
